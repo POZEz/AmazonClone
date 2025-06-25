@@ -20,3 +20,4 @@ Clone responsivo da página inicial da Amazon, desenvolvido com foco em prática
 - placehold.co
 
 ## 📷 Preview
+https://pozez.github.io/AmazonClone/
