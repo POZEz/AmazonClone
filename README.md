@@ -15,6 +15,7 @@ Clone responsivo da página inicial da Amazon, desenvolvido com foco em prática
 
 - HTML5
 - CSS3
+- JavaScript
 - Google Fonts
 - placehold.co
 
