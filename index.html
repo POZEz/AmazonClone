@@ -6,384 +6,304 @@
     <title>Amazon.com.br | Tudo pra você, de A a Z.</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter (Similar ao Amazon Ember) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Favicon da Amazon -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Favicon -->
     <link rel="icon" href="https://www.amazon.com.br/favicon.ico" type="image/x-icon">
 
     <script>
-        // Configuração customizada do Tailwind para simular as cores da Amazon
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'amazon-blue': {
-                            light: '#232F3E',
-                            DEFAULT: '#131921',
-                        },
-                        'amazon-yellow': {
-                            light: '#FFD814',
-                            DEFAULT: '#FEBD69',
-                        },
+                        amazon: {
+                            bg: '#E3E6E6',
+                            blue: '#131921',
+                            lightBlue: '#232F3E',
+                            search: '#febd69',
+                            searchHover: '#f3a847',
+                            link: '#007185',
+                            linkHover: '#c7511f',
+                            button: '#FFD814',
+                            buttonHover: '#F7CA00'
+                        }
                     },
                     fontFamily: {
-                      sans: ['Inter', 'sans-serif'],
+                      sans: ['Inter', 'sans-serif'], // Substituto para Amazon Ember
                     },
+                    maxWidth: {
+                        'page': '1500px'
+                    }
                 }
             }
         }
     </script>
     <style>
-        /* Estilos para garantir que os elementos da borda não quebrem a linha */
-        .nav-link {
-          font-size: 0.8rem;
-          columns: 1;
+        /* Ocultar barra de rolagem mas permitir scroll */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .nav-text-sm {
-          font-size: 0.8rem;
-          columns: 1;
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .nav-text-md {
-          font-size: 0.6rem;
-          columns: 2;
+        
+        /* Estilo para o contorno de foco estilo Amazon (laranja/azul) */
+        .amazon-focus:focus-within {
+            box-shadow: 0 0 0 2px #f90, 0 0 0 3px #fff;
+            border-radius: 4px;
         }
-        /* Estilo para a notificação */
-        #notification-banner {
-            transition: transform 0.3s ease-in-out;
+
+        /* Gradiente suave no Hero */
+        .hero-gradient {
+            background: linear-gradient(to bottom, rgba(227, 230, 230, 0) 0%, #E3E6E6 100%);
         }
     </style>
 </head>
-<body class="bg-gray-200 font-sans">
+<body class="bg-amazon-bg font-sans text-sm text-[#0F1111] flex flex-col min-h-screen">
 
-    <!-- =========== BANNER DE NOTIFICAÇÃO (Controlado por JS) =========== -->
-    <div id="notification-banner" class="fixed top-0 left-0 right-0 bg-amazon-yellow text-amazon-blue text-center p-3 z-50 transform -translate-y-full">
-        <p id="notification-message"></p>
+    <!-- =========== TOAST NOTIFICATION =========== -->
+    <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white border-l-4 border-green-500 shadow-lg rounded px-4 py-3 z-[60] hidden transition-all duration-300">
+        <div class="flex items-center">
+            <div class="text-green-500 mr-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <p id="toast-message" class="font-bold text-gray-800"></p>
+        </div>
     </div>
 
-    <!-- =========== CABEÇALHO PRINCIPAL =========== -->
-    <header class="bg-amazon-blue text-white sticky top-0 z-40">
-        <!-- Barra de navegação superior -->
-        <div class="flex items-center justify-between px-2 md:px-4 py-1">
+    <!-- =========== HEADER =========== -->
+    <header class="flex flex-col">
+        <!-- Topo: Logo, Busca, Conta -->
+        <div class="bg-amazon-blue text-white py-1 px-2 md:px-4 flex items-center gap-2 md:gap-4 relative z-50">
+            
             <!-- Logo -->
-            <div class="nav-link">
-                <img src="https://pngimg.com/uploads/amazon/amazon_PNG11.png" alt="Logo da Amazon" class="h-8 -mb-1 mt-1" style="filter: brightness(0) invert(1);">
-            </div>
+            <a href="#" class="p-2 border border-transparent hover:border-white rounded-sm cursor-pointer flex items-center flex-shrink-0">
+                <img src="https://pngimg.com/uploads/amazon/amazon_PNG11.png" alt="Amazon" class="h-6 md:h-8 object-contain filter brightness-0 invert">
+                <span class="text-xs ml-1 font-bold pt-3 text-gray-300 hidden">.com.br</span>
+            </a>
 
-            <!-- Localização -->
-            <div class="nav-link hidden md:flex items-end">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                    <p class="nav-text-sm text-gray-300">Enviar para</p>
-                    <p class="nav-text-md">Renan Machado</p>
+            <!-- Localização (Hidden Mobile) -->
+            <div class="hidden md:flex flex-col justify-center p-2 border border-transparent hover:border-white rounded-sm cursor-pointer leading-tight min-w-[100px]">
+                <div class="text-xs text-gray-300 pl-4">Enviar para</div>
+                <div class="text-sm font-bold flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 -ml-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Renan
                 </div>
             </div>
 
             <!-- Barra de Pesquisa -->
-            <div class="flex-grow flex items-center mx-2 md:mx-4">
-                <div class="hidden sm:flex bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs p-2 rounded-l-md cursor-pointer h-10 items-center">
+            <div class="flex-grow hidden sm:flex h-10 rounded-md amazon-focus relative">
+                <div class="bg-gray-200 hover:bg-gray-300 text-gray-600 text-xs px-3 rounded-l-md cursor-pointer flex items-center border-r border-gray-300">
                     <span>Todos</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <svg class="h-3 w-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
                 </div>
-                <input id="search-input" type="text" class="h-10 w-full px-4 text-black focus:outline-none" placeholder="Pesquisa Amazon.com.br">
-                <button id="search-button" class="bg-amazon-yellow hover:bg-amazon-yellow-light text-black p-2 rounded-r-md h-10 w-12 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <input type="text" id="search-input" class="flex-grow px-3 text-black focus:outline-none text-base" placeholder="Pesquisa Amazon.com.br">
+                <button id="search-btn" class="bg-amazon-search hover:bg-amazon-searchHover px-4 rounded-r-md flex items-center justify-center transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </button>
             </div>
 
-            <!-- Contas e Listas -->
-            <div id="account-link" class="nav-link hidden lg:block">
-                <p id="login-text-line1" class="nav-text-sm">Olá, faça seu login</p>
-                <p class="nav-text-md">Contas e Listas</p>
-            </div>
+            <!-- Links da Direita -->
+            <div class="flex items-center ml-auto gap-1 md:gap-2">
+                <!-- Contas e Listas -->
+                <div class="hidden md:block p-2 border border-transparent hover:border-white rounded-sm cursor-pointer leading-tight">
+                    <div class="text-xs">Olá, Renan</div>
+                    <div class="text-sm font-bold flex items-center">
+                        Contas e Listas
+                        <svg class="h-3 w-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
+                </div>
 
-            <!-- Devoluções e Pedidos -->
-            <div class="nav-link hidden lg:block">
-                <p class="nav-text-sm">Devoluções</p>
-                <p class="nav-text-md">e Pedidos</p>
-            </div>
+                <!-- Devoluções e Pedidos -->
+                <div class="hidden md:block p-2 border border-transparent hover:border-white rounded-sm cursor-pointer leading-tight">
+                    <div class="text-xs">Devoluções</div>
+                    <div class="text-sm font-bold">e Pedidos</div>
+                </div>
 
-            <!-- Carrinho -->
-            <div id="cart-button" class="nav-link flex items-end relative">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span class="nav-text-md ml-1 hidden md:inline">Carrinho</span>
-                <span class="absolute top-0 right-0 md:right-2 bg-amazon-yellow text-amazon-blue text-xs font-bold rounded-full h-5 w-5 text-center leading-5">0</span>
+                <!-- Carrinho -->
+                <div id="cart-btn" class="p-2 border border-transparent hover:border-white rounded-sm cursor-pointer flex items-end relative">
+                    <div class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-9 md:w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span id="cart-count" class="absolute -top-1 left-1/2 transform -translate-x-1/2 text-[#f08804] font-bold text-base md:text-lg">0</span>
+                    </div>
+                    <span class="text-sm font-bold hidden md:inline mb-1">Carrinho</span>
+                </div>
             </div>
         </div>
-        
-        <!-- Barra de navegação secundária -->
-        <nav class="bg-amazon-blue-light text-white flex items-center text-sm font-medium p-2 space-x-4 overflow-x-auto whitespace-nowrap">
-            <a href="#" class="flex items-center nav-link">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+
+        <!-- Search Mobile (Aparece apenas em telas pequenas) -->
+        <div class="sm:hidden bg-amazon-blue p-2 pt-0">
+            <div class="flex h-10 rounded-md amazon-focus bg-white">
+                <input type="text" class="flex-grow px-3 rounded-l-md focus:outline-none" placeholder="Pesquisa Amazon.com.br">
+                <button class="bg-amazon-search hover:bg-amazon-searchHover px-3 rounded-r-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menu Secundário (Nav Belt) -->
+        <nav class="bg-amazon-lightBlue text-white text-sm px-2 md:px-4 py-1.5 flex items-center gap-4 overflow-x-auto whitespace-nowrap hide-scrollbar">
+            <a href="#" class="flex items-center gap-1 font-bold p-1 border border-transparent hover:border-white rounded-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
                 Todos
             </a>
-            <a href="#" class="nav-link">Venda na Amazon</a>
-            <a href="#" class="nav-link">Ofertas do Dia</a>
-            <a href="#" class="nav-link">Atendimento ao Cliente</a>
-            <a href="#" class="nav-link">Ideias de Presente</a>
-            <a href="#" class="nav-link">Eletrônicos</a>
-            <a href="#" class="nav-link hidden md:inline">Livros</a>
-            <a href="#" class="nav-link hidden md:inline">Computadores</a>
-            <a href="#" class="nav-link hidden lg:inline">Casa</a>
-            <a href="#" class="nav-link hidden lg:inline">Games</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Venda na Amazon</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Ofertas do Dia</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Prime</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Música</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Livros</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Eletrônicos</a>
+            <a href="#" class="p-1 border border-transparent hover:border-white rounded-sm">Casa</a>
         </nav>
     </header>
 
     <!-- =========== CONTEÚDO PRINCIPAL =========== -->
-    <main class="max-w-7xl mx-auto px-4 pb-10">
-        <!-- Seção Hero -->
-        <section class="relative -mt-16 mb-4">
-             <div class="h-64 md:h-96 bg-cover bg-center" style="background-image: url('https://placehold.co/1500x400/cccccc/333333?text=Site+de+demonstração')"></div>
-            <div class="absolute bottom-0 w-full h-1/3 bg-gradient-to-t from-gray-200 to-transparent"></div>
-        </section>
+    <main class="flex-grow max-w-page mx-auto w-full relative">
         
-        <!-- Grid de Produtos e Ofertas (com z-index para garantir que fique sobre a hero) -->
-        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Card 1: Games -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold mb-2">Acessórios Gamer</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <img src="https://placehold.co/160x120/eeeeee/555555?text=Headsets" alt="Headsets" class="w-full h-24 object-cover rounded">
-                        <p class="text-xs mt-1">Headsets</p>
-                    </div>
-                    <div>
-                        <img src="https://placehold.co/160x120/eeeeee/555555?text=Teclados" alt="Teclados" class="w-full h-24 object-cover rounded">
-                        <p class="text-xs mt-1">Teclados</p>
-                    </div>
-                    <div>
-                        <img src="https://placehold.co/160x120/eeeeee/555555?text=Mouses" alt="Mouses" class="w-full h-24 object-cover rounded">
-                        <p class="text-xs mt-1">Mouses</p>
-                    </div>
-                    <div>
-                        <img src="https://placehold.co/160x120/eeeeee/555555?text=Cadeiras" alt="Cadeiras" class="w-full h-24 object-cover rounded">
-                        <p class="text-xs mt-1">Cadeiras</p>
-                    </div>
+        <!-- Slider Hero -->
+        <section class="relative w-full mx-auto cursor-pointer overflow-hidden">
+            <div id="hero-slider" class="flex transition-transform duration-500 ease-in-out h-[250px] md:h-[400px] lg:h-[600px]">
+                <!-- Slide 1 -->
+                <div class="min-w-full relative bg-gray-800">
+                    <img src="https://placehold.co/1500x600/232F3E/FFFFFF?text=Prime+Day:+Ofertas+Imperdíveis" alt="Banner 1" class="w-full h-full object-cover opacity-80 mask-image-bottom">
                 </div>
-                <a href="#" class="text-blue-600 hover:text-orange-600 text-sm mt-4 inline-block">Ver mais</a>
+                <!-- Slide 2 -->
+                <div class="min-w-full relative bg-gray-800">
+                    <img src="https://placehold.co/1500x600/37475A/FFFFFF?text=Semana+Gamer:+Até+40%+OFF" alt="Banner 2" class="w-full h-full object-cover opacity-80">
+                </div>
+                <!-- Slide 3 -->
+                <div class="min-w-full relative bg-gray-800">
+                    <img src="https://placehold.co/1500x600/131921/FFFFFF?text=Novos+Dispositivos+Echo+com+Alexa" alt="Banner 3" class="w-full h-full object-cover opacity-80">
+                </div>
             </div>
+            
+            <!-- Gradiente para mascarar a base do banner -->
+            <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-b from-transparent to-amazon-bg pointer-events-none"></div>
 
-            <!-- Card 2: Ofertas de PC -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold mb-4">Ofertas em Computadores e Acessórios</h2>
-                <img src="https://placehold.co/379x304/eeeeee/555555?text=Ofertas+de+PC" alt="Ofertas em PC" class="w-full h-64 object-cover rounded">
-                <a href="#" class="text-blue-600 hover:text-orange-600 text-sm mt-4 inline-block">Compre agora</a>
-            </div>
-
-            <!-- Card 3: Brinquedos -->
-            <div class="bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold mb-4">Brinquedos por menos de R$100</h2>
-                <img src="https://placehold.co/379x304/eeeeee/555555?text=Brinquedos" alt="Brinquedos" class="w-full h-64 object-cover rounded">
-                <a href="#" class="text-blue-600 hover:text-orange-600 text-sm mt-4 inline-block">Ver mais</a>
-            </div>
-
-            <!-- Card 4: Login e Ofertas pessoais -->
-            <div class="space-y-4">
-                <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                    <h3 class="text-xl font-semibold mb-2">Faça seu login para a melhor experiência</h3>
-                    <button id="login-button" class="bg-yellow-400 hover:bg-yellow-500 w-full py-2 rounded-lg shadow-sm font-semibold">Fazer login de forma segura</button>
-                </div>
-                <div class="bg-white rounded-lg shadow-md">
-                    <img src="https://placehold.co/379x304/eeeeee/555555?text=Publicidade" alt="Publicidade" class="w-full rounded">
-                </div>
-            </div>
-        </div>
-
-        <!-- Seção de Carrossel de Produtos -->
-        <section class="bg-white p-4 rounded-lg shadow-md mt-6">
-            <h2 class="text-xl font-bold mb-4">Itens comprados com frequência</h2>
-            <div class="flex space-x-4 overflow-x-auto pb-4">
-                <!-- Produto 1 -->
-                <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Echo+Pop" alt="Echo Pop" class="h-40 mx-auto">
-                    <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">Echo Pop | Smart speaker compacto com som de alta qualidade e Alexa</a>
-                </div>
-                <!-- Produto 2 -->
-                 <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Fire+Stick+4K" alt="Fire TV Stick" class="h-40 mx-auto">
-                     <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">Novo Fire TV Stick 4K, com suporte a Wi-Fi 6 e som imersivo Dolby Atmos</a>
-                </div>
-                <!-- Produto 3 -->
-                <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Kindle" alt="Kindle" class="h-40 mx-auto">
-                     <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">Kindle 11ª Geração (lançamento 2022) | Mais leve, com resolução de 300 ppi</a>
-                </div>
-                <!-- Produto 4 -->
-                <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Robô+Aspirador" alt="Robô Aspirador" class="h-40 mx-auto">
-                    <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">WAP ROBOT W100 - Robô Aspirador de Pó, Mope, Varre e Aspira</a>
-                </div>
-                <!-- Produto 5 -->
-                <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Livro" alt="Livro" class="h-40 mx-auto">
-                     <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">O homem mais rico da Babilônia</a>
-                </div>
-                <!-- Produto 6 -->
-                <div class="flex-shrink-0 w-48 text-center">
-                    <img src="https://placehold.co/150x160/eeeeee/555555?text=Escova+Secadora" alt="Escova Secadora" class="h-40 mx-auto">
-                     <a href="#" class="text-sm text-blue-600 hover:text-orange-600 line-clamp-2 mt-2">Escova Secadora Soft, P, Preto, 110v, Britânia</a>
-                </div>
-            </div>
+            <!-- Botões de Navegação do Slider -->
+            <button id="prev-slide" class="absolute top-1/4 left-2 h-40 w-12 flex items-center justify-center hover:border-2 border-white rounded transition focus:outline-none group">
+                <svg class="h-10 w-10 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button id="next-slide" class="absolute top-1/4 right-2 h-40 w-12 flex items-center justify-center hover:border-2 border-white rounded transition focus:outline-none group">
+                <svg class="h-10 w-10 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
         </section>
-    </main>
-    
-    <!-- =========== RODAPÉ =========== -->
-    <footer>
-        <!-- Botão Voltar ao Topo -->
-        <div id="back-to-top" class="bg-amazon-blue-light hover:bg-gray-700 text-white text-center py-4 cursor-pointer">
-            <p class="text-sm">Voltar ao topo</p>
-        </div>
-        
-        <!-- Links do Rodapé -->
-        <div class="bg-amazon-blue text-white">
-            <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 px-8 py-10">
-                <!-- Seções de links do rodapé -->
-                <div>
-                    <h3 class="font-bold mb-2">Conheça-nos</h3>
-                    <ul class="text-sm space-y-2 text-gray-300">
-                        <li><a href="#" class="hover:underline">Informações corporativas</a></li>
-                        <li><a href="#" class="hover:underline">Carreiras</a></li>
-                        <li><a href="#" class="hover:underline">Comunicados à imprensa</a></li>
-                        <li><a href="#" class="hover:underline">Comunidade</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-bold mb-2">Ganhe dinheiro conosco</h3>
-                    <ul class="text-sm space-y-2 text-gray-300">
-                        <li><a href="#" class="hover:underline">Venda na Amazon</a></li>
-                        <li><a href="#" class="hover:underline">Proteja e construa sua marca</a></li>
-                        <li><a href="#" class="hover:underline">Publique seus livros</a></li>
-                        <li><a href="#" class="hover:underline">Seja um associado</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-bold mb-2">Deixe-nos ajudar você</h3>
-                    <ul class="text-sm space-y-2 text-gray-300">
-                        <li><a href="#" class="hover:underline">Sua conta</a></li>
-                        <li><a href="#" class="hover:underline">Frete e prazo de entrega</a></li>
-                        <li><a href="#" class="hover:underline">Devoluções e reembolsos</a></li>
-                        <li><a href="#" class="hover:underline">Ajuda</a></li>
-                    </ul>
-                </div>
-                 <div>
-                    <h3 class="font-bold mb-2">Pagamento</h3>
-                    <ul class="text-sm space-y-2 text-gray-300">
-                        <li><a href="#" class="hover:underline">Cartões de crédito e débito</a></li>
-                        <li><a href="#" class="hover:underline">Boleto e Pix</a></li>
-                        <li><a href="#" class="hover:underline">Parcelamento</a></li>
-                        <li><a href="#" class="hover:underline">Amazon e COVID-19</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
 
-        <!-- Rodapé Inferior -->
-        <div class="bg-amazon-blue border-t border-gray-700 py-6">
-            <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
-                 <img src="https://pngimg.com/uploads/amazon/amazon_PNG11.png" alt="Logo da Amazon" class="h-7" style="filter: brightness(0) invert(1);">
-                 <div class="flex space-x-4">
-                    <button class="flex items-center border border-gray-500 rounded-sm px-3 py-1 text-sm text-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.512 5.73 6.512 5.73s0 0 .001-.001C8.14 4.227 9.87 3.75 10 3.75s.13.477 1.487 1.777c.427.427.835.924 1.193 1.472a6.013 6.013 0 01-1.412 5.053c-.26.33-.555.638-.88.926a4.5 4.5 0 01-6.42 0c-.322-.288-.617-.596-.876-.926a6.012 6.012 0 011.912-2.706z" clip-rule="evenodd" />
-                        </svg>
-                        Português
-                    </button>
-                    <button class="flex items-center border border-gray-500 rounded-sm px-3 py-1 text-sm text-gray-300">
-                        <span class="mr-2">🇧🇷</span> Brasil
-                    </button>
-                 </div>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Lógica para as funcionalidades da página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Referências aos elementos do DOM
-            const backToTopButton = document.getElementById('back-to-top');
-            const searchButton = document.getElementById('search-button');
-            const searchInput = document.getElementById('search-input');
-            const cartButton = document.getElementById('cart-button');
-            const loginButton = document.getElementById('login-button');
-            const loginTextLine1 = document.getElementById('login-text-line1');
-            const notificationBanner = document.getElementById('notification-banner');
-            const notificationMessage = document.getElementById('notification-message');
-
-            let notificationTimeout;
-
-            // Função para mostrar a notificação
-            function showNotification(message) {
-                clearTimeout(notificationTimeout); // Limpa timeout anterior se houver
-                notificationMessage.textContent = message;
-                notificationBanner.style.transform = 'translateY(0)';
+        <!-- Grid de Cards (Sobrepondo o banner) -->
+        <div class="relative z-10 -mt-16 md:-mt-32 lg:-mt-64 px-4 pb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                // Esconde a notificação após 3 segundos
-                notificationTimeout = setTimeout(() => {
-                    notificationBanner.style.transform = 'translateY(-100%)';
-                }, 3000);
-            }
+                <!-- Card Quadrantes: Games -->
+                <div class="bg-white p-5 pb-4 z-20 flex flex-col h-full">
+                    <h2 class="text-xl font-bold mb-3">Continue comprando ofertas</h2>
+                    <div class="grid grid-cols-2 gap-4 mb-4 flex-grow">
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Headset" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Headsets</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Teclado" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Teclados</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Mouse" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Mouses</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Cadeira" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Cadeiras</p>
+                        </div>
+                    </div>
+                    <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline text-sm">Veja mais em Games</a>
+                </div>
 
-            // Evento: Clicar em "Voltar ao topo"
-            if (backToTopButton) {
-                backToTopButton.addEventListener('click', () => {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                });
-            }
+                <!-- Card Único: Oferta do Dia -->
+                <div class="bg-white p-5 pb-4 z-20 flex flex-col h-full">
+                    <h2 class="text-xl font-bold mb-3">Ofertas em PCs e Monitores</h2>
+                    <div class="flex-grow mb-4 cursor-pointer">
+                        <img src="https://placehold.co/300x350/eee/555?text=Notebooks" class="w-full h-full object-cover">
+                    </div>
+                    <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline text-sm">Confira todas as ofertas</a>
+                </div>
 
-            // Evento: Clicar no botão de pesquisa
-            if (searchButton) {
-                searchButton.addEventListener('click', () => {
-                    const query = searchInput.value.trim();
-                    if (query) {
-                        showNotification(`Pesquisando por: "${query}"`);
-                    } else {
-                        showNotification('Por favor, digite algo para pesquisar.');
-                    }
-                });
-            }
+                <!-- Card Quadrantes: Casa -->
+                <div class="bg-white p-5 pb-4 z-20 flex flex-col h-full">
+                    <h2 class="text-xl font-bold mb-3">Renove sua casa</h2>
+                    <div class="grid grid-cols-2 gap-4 mb-4 flex-grow">
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Cozinha" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Cozinha</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Banho" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Banho</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Decoração" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Decoração</p>
+                        </div>
+                        <div class="cursor-pointer">
+                            <img src="https://placehold.co/150x150/eee/555?text=Jardim" class="w-full h-full object-cover mb-1">
+                            <p class="text-xs text-gray-600">Jardim</p>
+                        </div>
+                    </div>
+                    <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline text-sm">Ver mais</a>
+                </div>
 
-            // Evento: Pressionar Enter na barra de pesquisa
-            if(searchInput) {
-                searchInput.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        searchButton.click();
-                    }
-                });
-            }
+                <!-- Card Login / Propaganda -->
+                <div class="flex flex-col gap-6 z-20">
+                    <div class="bg-white p-6 rounded shadow-sm">
+                        <h3 class="text-xl font-bold mb-3">Faça seu login para a melhor experiência</h3>
+                        <button class="bg-amazon-button hover:bg-amazon-buttonHover border border-yellow-500 w-full py-1.5 rounded-lg shadow-sm text-sm mb-3 cursor-pointer">Fazer login de forma segura</button>
+                        <p class="text-xs text-center">Novo cliente? <a href="#" class="text-blue-700 hover:text-orange-700 hover:underline">Comece aqui.</a></p>
+                    </div>
+                    <div class="bg-white p-4 flex-grow cursor-pointer">
+                         <img src="https://placehold.co/300x250/eee/555?text=Amazon+Music" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
 
-            // Evento: Clicar no carrinho
-            if (cartButton) {
-                cartButton.addEventListener('click', () => {
-                    showNotification('Seu carrinho de compras está vazio.');
-                });
-            }
-
-            // Evento: Clicar no botão de login
-            if (loginButton) {
-                loginButton.addEventListener('click', () => {
-                    loginTextLine1.textContent = 'Olá, Usuário';
-                    showNotification('Login realizado com sucesso!');
-                    loginButton.disabled = true;
-                    loginButton.textContent = "Login Efetuado";
-                    loginButton.classList.add("bg-green-500", "hover:bg-green-600");
-                    loginButton.classList.remove("bg-yellow-400", "hover:bg-yellow-500");
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+            <!-- Carrossel de Produtos Horizontal -->
+            <div class="bg-white p-5 mt-6 relative group">
+                <h2 class="text-xl font-bold mb-4">Mais vendidos em Eletrônicos</h2>
+                
+                <div id="product-scroll-container" class="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth">
+                    <!-- Produto 1 -->
+                    <div class="min-w-[160px] max-w-[200px] cursor-pointer p-2">
+                        <img src="https://placehold.co/160x160/eee/555?text=Echo+Dot" class="h-40 mx-auto mb-2 object-contain">
+                        <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline line-clamp-2 text-sm">Echo Dot (5ª Geração) | Smart speaker com Alexa</a>
+                        <div class="text-xs text-gray-500 mt-1">85.239</div>
+                        <div class="text-base font-bold mt-1">R$ 429,00</div>
+                    </div>
+                     <!-- Produto 2 -->
+                     <div class="min-w-[160px] max-w-[200px] cursor-pointer p-2">
+                        <img src="https://placehold.co/160x160/eee/555?text=Kindle" class="h-40 mx-auto mb-2 object-contain">
+                        <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline line-clamp-2 text-sm">Kindle 11ª Geração (lançamento 2022)</a>
+                        <div class="text-xs text-gray-500 mt-1">12.500</div>
+                        <div class="text-base font-bold mt-1">R$ 499,00</div>
+                    </div>
+                     <!-- Produto 3 -->
+                     <div class="min-w-[160px] max-w-[200px] cursor-pointer p-2">
+                        <img src="https://placehold.co/160x160/eee/555?text=Fire+Stick" class="h-40 mx-auto mb-2 object-contain">
+                        <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline line-clamp-2 text-sm">Fire TV Stick Lite | Streaming em Full HD</a>
+                        <div class="text-xs text-gray-500 mt-1">45.100</div>
+                        <div class="text-base font-bold mt-1">R$ 299,00</div>
+                    </div>
+                     <!-- Produto 4 -->
+                     <div class="min-w-[160px] max-w-[200px] cursor-pointer p-2">
+                        <img src="https://placehold.co/160x160/eee/555?text=iPhone+14" class="h-40 mx-auto mb-2 object-contain">
+                        <a href="#" class="text-amazon-link hover:text-amazon-linkHover hover:underline line-clamp-2 text-s
